@@ -29,7 +29,7 @@ jobs:
 
       - name: Run UiPath Project
         run: |
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --file "C:\path\to\your\project\invoice_processing.xaml"
+          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --file "C:\Users\MSI\Documents\UiPath\invoice processing"
 
       #  (optional)
       - name: Upload Logs
@@ -47,8 +47,8 @@ jobs:
           text: "🚨 UIPath Automation failed in GitHub Actions. Please check the logs."
       - name: Commit and push changes (if needed)
         run: |
-          git config --global user.name "Your Name"
-          git config --global user.email "youremail@example.com"
+          git config --global user.name "RBS3"
+          git config --global user.email "rana.ben.salem.10@gmail.com"
           git add .
           git commit -m "Automated commit after running UiPath"
           git push
