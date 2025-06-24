@@ -11,48 +11,40 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # Step 2: Setup UiPath Robot
       - name: Setup UiPath Robot
         run: |
           choco install uipath-robot
 
-      # Step 3: Install UiPath Dependencies
       - name: Install UiPath Dependencies
         run: |
           "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.Excel.Activities"
           "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.GSuite.Activities"
           "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.Mail.Activities"
           "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.MicrosoftDynamicsFO.Activities"
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.DocumentUnderstanding.Activities"
           "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.PDF.Activities"
           "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.Automation.Activities"
 
-      # Step 4: Run UiPath Project
       - name: Run UiPath Project
         run: |
           "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --file "C:\path\to\your\project\invoice_processing.xaml"
 
-      # Step 5: Upload logs (optional)
+      #  (optional)
       - name: Upload Logs
         uses: actions/upload-artifact@v3
         with:
           name: uipath-logs
           path: C:\Users\YourUser\AppData\Local\UiPath\Logs
 
-      # Step 6: Slack notification on failure (if the above steps fail)
       - name: Send Slack notification (failure)
-        if: failure()  # Only runs if any previous step fails
+        if: failure()  
         uses: slackapi/slack-github-action@v1.21.0
         with:
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
           slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
           text: "🚨 UIPath Automation failed in GitHub Actions. Please check the logs."
-
-      # Step 7: Commit and push changes (if needed)
       - name: Commit and push changes (if needed)
         run: |
           git config --global user.name "Your Name"
