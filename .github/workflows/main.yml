@@ -31,18 +31,11 @@ jobs:
 
       - name: Push package to Orchestrator
         run: |
-          uipcli push -p output\YourProjectName.1.0.0.nupkg
+          uipcli push -p output\invoice processing.1.0.0.nupkg
 
       - name: Trigger job in Orchestrator
         run: |
           uipcli jobs start --releaseKey "${{ secrets.RELEASE_KEY }}" --strategy "ModernJobsCount" --jobsCount 1
-
-      - name: Upload Logs (optional)
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: uipath-logs
-          path: C:\Users\YourUser\AppData\Local\UiPath\Logs
 
       - name: Slack Notification on Failure
         if: failure()
