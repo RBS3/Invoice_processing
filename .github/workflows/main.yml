@@ -1,54 +1,53 @@
-name: UIPath CI/CD with Failure Notification
+name: UiPath CI/CD Pipeline
 
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 jobs:
-  build:
+  deploy:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Setup UiPath Robot
-        run: |
-          choco install uipath-robot
+      - name: Install UiPath CLI
+        run: choco install uipath-cli -y
 
-      - name: Install UiPath Dependencies
+      - name: Pack UiPath project
         run: |
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.Excel.Activities"
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.GSuite.Activities"
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.Mail.Activities"
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.MicrosoftDynamicsFO.Activities"
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.PDF.Activities"
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --install-packages "UiPath.Automation.Activities"
+          uipcli pack "path\to\project.json" -o output
 
-      - name: Run UiPath Project
+      - name: Login to Orchestrator
         run: |
-          "C:\Program Files\UiPath\Studio\UiPath.Studio.exe" --file "C:\Users\MSI\Documents\UiPath\invoice processing"
+          uipcli login `
+            --url "${{ secrets.ORCH_URL }}" `
+            --clientId "${{ secrets.ORCH_CLIENT_ID }}" `
+            --clientSecret "${{ secrets.ORCH_CLIENT_SECRET }}" `
+            --accountName "${{ secrets.ORCH_ACCOUNT }}" `
+            --serviceName "${{ secrets.ORCH_SERVICE }}" `
+            --tenant "${{ secrets.ORCH_TENANT }}"
 
-      #  (optional)
-      - name: Upload Logs
+      - name: Push package to Orchestrator
+        run: |
+          uipcli push -p output\YourProjectName.1.0.0.nupkg
+
+      - name: Trigger job in Orchestrator
+        run: |
+          uipcli jobs start --releaseKey "${{ secrets.RELEASE_KEY }}" --strategy "ModernJobsCount" --jobsCount 1
+
+      - name: Upload Logs (optional)
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: uipath-logs
           path: C:\Users\YourUser\AppData\Local\UiPath\Logs
 
-      - name: Send Slack notification (failure)
-        if: failure()  
+      - name: Slack Notification on Failure
+        if: failure()
         uses: slackapi/slack-github-action@v1.21.0
         with:
           channel-id: ${{ secrets.SLACK_CHANNEL_ID }}
           slack-token: ${{ secrets.SLACK_BOT_TOKEN }}
-          text: "🚨 UIPath Automation failed in GitHub Actions. Please check the logs."
-      - name: Commit and push changes (if needed)
-        run: |
-          git config --global user.name "RBS3"
-          git config --global user.email "rana.ben.salem.10@gmail.com"
-          git add .
-          git commit -m "Automated commit after running UiPath"
-          git push
+          text: "🚨 UiPath job failed. Check logs in GitHub Actions."
