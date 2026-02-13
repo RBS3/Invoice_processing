@@ -1,0 +1,23 @@
+
+name: Rana Security Pipeline
+on: [push]
+
+jobs:
+  placeholder_scan:
+    name: Initializing Rana Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Verify Environment
+        run: |
+          echo "✅ Pipeline successfully injected by Rana-Security-Brain!"
+          echo "🚀 Ready to integrate Trivy, Semgrep, and Gitleaks."
+          echo "📅 Timestamp: $(date)"
+
+      - name: Simulate Scan
+        run: |
+          echo "Scanning for vulnerabilities..."
+          sleep 5
+          echo "Scan complete. No critical blockers found in skeleton mode."
